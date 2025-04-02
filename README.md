@@ -1,6 +1,6 @@
 # Análisis de datos ómicos PEC1
 
-##Descripción metadatos 
+**Descripción metadatos 
 
 En este repositorio se encuentran los documentos relacionados con la entrega de la PEC1 de Análisis de datos ómicos. Los datos utilizados para esta entrega son los obtenidos en el estudio de “Brain Metabolomics in Fragile X-Associated Tremor/Ataxia Syndrome (FXTAS)”. Descargados a través de metabolomicsWorkbench con ID ST002825. 
 
