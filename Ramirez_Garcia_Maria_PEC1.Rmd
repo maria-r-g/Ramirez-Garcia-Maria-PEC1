@@ -1,0 +1,182 @@
+---
+title: "Análisis de datos ómicos PEC1 "
+author: "María Ramírez García"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Descripción del proceso.
+Para realizar esta PEC he buscado un dataset en metabolomics Workbench, filtrando por especie. Navegando con diferentes filtros de enfermedad y tipo de muestra, encontré un estudio que llamo mi atención, *Brain Metabolomics in Fragile X-Associated Tremor/Ataxia Syndrome (FXTAS)*. Me pareció interesante encontrar datos de metabolómica cerebral relacionados con una enfermedad rara como es FXTAS. El análisis de metabolitos y el estudio la mutación en el cromosoma X, son cruciales para poder entender mejor las causas y síntomas de este síndrome.
+
+Mediante el **ID ST002825** del estudio en *metabolomics Workbench* he descargado los metadatos. Los diferentes datos del análisis se encuentran en un único archivo, en mi caso descargue el archivo con extensión txt, este fichero de texto estaba dividido en varias secciones, entre ellas secciones que contienen: datos relacionados con información del estudio, datos sobre las muestras, datos sobre los metabolitos estudiados o datos de los metabolitos en cada muestra.
+
+Para trabajar con los datos de forma mas cómoda y su vez poder crear un objeto SummarizedExperiment, he creado varios archivos txt modificando el archivo original y dando lugar a tres archivos diferentes, que contienen la información de las muestras, la información de los metabolitos y el dataset. La modificación la he llevado a cabo partiendo del fichero original y eliminando las líneas no deseadas de cada fichero txt. Posteriormente he creado a partir de cada fichero txt un fichero .xlxs, con la finalidad de importar los datos y trabajar cómodamente con R. Una ver que he creado el objeto SummarizedExperiment y he comprobado su contenido y estructura he realizado un análisis exploratorio de los datos.
+
+Estos archivos junto con SummarizedExperiment_PEC1.Rda, el código en R (Ramírez_García_María_PEC1.Rmd), un archivo descriptivo (README.md) y este informe se encuentran en el siguiente repositorio de GitHub:
+**-	https://github.com/maria-r-g/Ramirez-Garcia-Maria-PEC1.git**
+
+# Creación del SummarizedExperiment
+El SummarizedExperiment está creado a partir con los archivos descritos al inicio de la PEC, a excepción de la sección que contiene los metadatos del estudio, los cuales han sido añadidos manualmente creando una lista  y con la función metadata(). Como se menciona la parte del SummarizedExperiment que detalla la información de las muestras esta creada a partir del archivo SampleXf.xlsx con colData(). Las partes correspondientes al dataset y a la información de los metabolitos son creados de la misma forma pero con los archivos DataSetX.xlsx y metabolXf.xlsx y las funciones assays() y rowData() respectivamente.
+
+```{r librerías, include=FALSE}
+# Cargamos las librerías necesarias
+library(SummarizedExperiment)
+library(readxl) # leer archivos excel
+library(S4Vectors)  # Para manejar metadatos
+```
+
+```{r DataSet, echo=TRUE}
+# Leemos el archivo con los datos analizados, contendrá el DataSet.
+datosXf <- read_xlsx("DataSetX.xlsx")
+
+# Comprobamos la estructura de los datos y en que clase se han guardado.
+head(datosXf)
+class(datosXf)
+dim(datosXf)
+# Guardamos los datos en un data.frame, para manipularlos mejor.
+datosXf <- as.data.frame(datosXf)
+# Asignamos la primera columna como nombres de filas 
+rownames(datosXf) <- datosXf[[1]] 
+datosXf <- datosXf[, -1]  # Eliminamos la primera columna que ahora es redundante
+# comprobamos el data.frame
+datosXf[1:6,1:3]
+class(datosXf) 
+dim(datosXf)
+# Convertimos los datos en una matriz para poder introducirlos al SummarizedExperiment
+datosXf <- as.matrix(sapply(datosXf, as.numeric)) 
+# Los datos han de ser una matriz numérica para poder añadirlos con assays() 
+class(datosXf)
+```
+
+```{r metabolitos y muestras, echo=TRUE}
+# Añadimos y modificamos los archivos correspondientes a las muestras.
+SampleXf <- read_xlsx("SampleXf.xlsx")
+SampleXf <- as.data.frame(SampleXf)
+rownames(SampleXf) <- SampleXf[[1]] 
+SampleXf <-SampleXf[, -1] 
+# Comprobamos las muestas (columnas del dataset)
+class(SampleXf) 
+dim(SampleXf)
+SampleXf[1:3,]
+
+# Añadimos y modificamos los archivos correspondientes a los metabolitos.
+metabolXf <- read_xlsx("metabolXf.xlsx")
+metabolXf <- as.data.frame(metabolXf)
+rownames(metabolXf) <- metabolXf[[1]] 
+metabolXf <-metabolXf[, -1] 
+# Comprobamos los metabolitos (filas del dataset)
+class(metabolXf) 
+dim(metabolXf)
+metabolXf[1:3,]
+
+```
+
+```{r SummarizedExperiment, echo=TRUE}
+# Creamos el SummarizedExperiment
+se <- SummarizedExperiment( assays = list(counts= datosXf), rowData = metabolXf, colData = SampleXf)
+# Añadimos información del estudio manualmente.
+metadata(se) <- list(
+  Study_ID	= "ST002825", 
+  Study_Title	= "Brain Metabolomics in Fragile X-Associated Tremor/Ataxia Syndrome (FXTAS)", 
+  Study_Summary	= "The course of pathophysiological mechanisms involved in fragile X-associated tremor/ataxia syndrome (FXTAS) remains largely unknown. Previous proteomics and metabolomics studies conducted in blood samples collected from FMR1 premutation carriers with FXTAS reported abnormalities in energy metabolism, and precursors of gluconeogenesis showed significant changes in plasma expression levels in FMR1 premutation carriers who developed FXTAS. We conducted an analysis of postmortem human brain tissues from 44 donors, 25 brains with FXTAS, and 19 matched controls. We quantified the metabolite relative abundance in the inferior temporal gyrus and the cerebellum using untargeted mass spectrometry (MS)-based metabolomics. We investigated how the metabolite type and abundance relate to the number of cytosine-guanine-guanine (CGG) repeats, to markers of neurodegeneration, and to the symptoms of FXTAS.", 
+  Institute = "University of California, Davis",
+  Name_author = "Martínez-Cerdeño, Verónica", 
+  Email	= "vmartinezcerdeno@ucdavis.edu",
+  Submit_Date	= "2023-08-22",
+  Analysis_Type = "GC-MS", 
+  Release_Date	= "2023-09-19",
+  Subject_Type =	"Human",
+  Link_metabolomicsworkbench ="https://www.metabolomicsworkbench.org/data/DRCCMetadata.php?Mode=Study&StudyID=ST002825&StudyType=MS&ResultType=1#DataTabs",
+  Link_ncbi = "https://pmc.ncbi.nlm.nih.gov/articles/PMC10487256/"
+)
+# Guardamos el objeto se SummarizedExperiment en formato binario .Rda
+save(se, file = "SummarizedExperiment_PEC1.Rda")
+```
+
+# Análisis exploratorio
+A continuación, se muestras dos análisis exploratorios, el primero enfocado a la estructura e información del objeto *se* **SummarizedExperiment** a través de diferentes accessor. Y el segundo enfocado en la exploración y relación de los datos obtenidos en el estudio. 
+
+## Análisis exploratorio, visión general del SummarizedExperiment
+```{r echo=TRUE}
+# Información de SummarizedExperiment
+se
+```
+Extraemos información de SummarizedExperiment a través de diferentes accessor.
+```{r echo=TRUE}
+# Accedemos a los datos de expresión
+class(assays(se))  # lista compuesta por los dataset, en esta ocasión solo uno.
+dim(assay(se))
+class(assays(se)$counts)
+# Vemos el contenido de los datos de expresión (primeras filas y columnas)
+assay(se)[1:6, 1:3]  
+# Metadatos de las muestras
+class(colData(se))  
+head(colData(se)) 
+# Metadatos de los metabolitos
+class(rowData(se))
+head(rowData(se))
+# Visualizamos los metadatos añadidos
+metadata(se)
+```
+
+## Análisis exploratorio, visión general de los datos.
+Creamos un grafico Heatmap, para que nos ayude a visualizar la expresión de los metabolitos en las muestras. Con el podemos observar la correlación entre las muestras de manera mas visual. En los datos las muestras están ordenadas según la región analizada y dentro de esta, según si son casos o controles.
+
+```{r echo=TRUE}
+# Análisis de correlación
+# Extraemos la matriz de datos y la transponemos para que las muestras sean filas y hacemos la correlación.
+cor_matrix <- cor(t(assay(se))) 
+# Visualización con un Heatmap
+heatmap(cor_matrix, main = "Heatmap de correlación")  
+```
+
+Como podemos observar la información que nos muestra el Heatmap de correlación no es de mucha utilidad. No podemos obtener conclusiones claras del grafico por varias razones, la principal seria la gran cantidad de muestras y metabolitos que hemos utilizado, aunque las muestras estén ordenadas por tipo y casos no las hemos agrupado lo que dificulta la visualización.
+
+En el caso de los metabolitos pasa algo parecido, en los datos encontramos todos los metabolitos encontrados, lo ideal sería filtrar por relevancia para la enfermedad, esto lo podemos conseguir con ayuda de estudios anteriores y realizando otros análisis para averiguar cuales de los metabolitos tienen una expresión diferencial según si es control o caso dentro de cada tipo de muestra.
+
+
+```{r echo=TRUE}
+# Análisis del cerebelo (CBL)
+
+# Con la exploración de los datos sabemos que las muestras tomadas del CB son las columnas del 1:38 
+# (1:20 casos y 21:38 controles). 
+# Análisis de correlación en casos afectados
+CBL_casos<- cor(t(assay(se)[1:10,1:20])) 
+# Visualización
+heatmap(CBL_casos, main = "CBL_afectados")  
+```
+```{r echo=TRUE}
+# Análisis de correlación en casos control
+CBL_control<- cor(t(assay(se)[1:10,21:38])) 
+heatmap(CBL_control, main = "CBL_control")
+```
+
+
+Se filtran los metabolitos para una mejor visualización, pero no sigue un criterio claro, se debería realizar el filtro después de un análisis más profundo de los datos, para seleccionar los metabolitos que sean más significativos. Tampoco hemos realizado ninguna normalización de datos, ni análisis para determinar si las diferencias son significativas.
+
+# Interpretación biológica
+En el estudio *"Brain Metabolomics in Fragile X-Associated Tremor/Ataxia Syndrome (FXTAS)"*  se realiza un análisis de perfiles metabólicos en muestras post mortem  de individuos con FXTAS. 
+
+El síndrome FXTAS es un trastorno neurodegenerativo causado por una repetición expandida de trinucleótidos CGG en la región promotora del gen *FMR1*, que codifica para la proteína FMRP,  la cual está implicada en el desarrollo cognitivo. El desarrollo de FXTAS esta influenciado por el número de expansiones del triplete CGG que conforman la permutación de *FMR1*, aumentando la tasa de conversión con la edad.
+
+## Materiales y métodos 
+Los autores del estudio usan un enfoque de metabolómica no dirigida utilizando cromatografía de gases acoplada con espectrometría de masas (GC-MS) para un perfil metabólico global. Las muestras analizadas son de la corteza cerebral (*inferior temporal gyrus (ITG)*) y del cerebelo *(CB)* humana post mortem. 
+La longitud de las repetición CGG se obtuvo de sangre y se determino mediante PCR y Southern blot.
+
+### Participantes 
+Se analizan 25 cerebros con FXTAS y 19 controles emparejados por edad y sexo. Los casos de FXTAS estaban avanzados en la progresión de la enfermedad y tenían una presentación clínica variable. El diagnóstico de FXTAS fue confirmado con la presencia de la premutación de *FMR1* .
+
+## Resultados 
+En el articulo identifican 191 metabolitos primarios de los 513 que se detectaron. De los cuales 22 metabolitos mostraban cambios entre grupos de ITG, mientras que en al CB mostraron cambios 21 metabolitos. La citidina y el ácido glicérico mostraron una regulación negativa en el ITG de los pacientes con FXTAS, en comparación con los controles. En el CB, la fructosa-1-fosfato, el 1,5-anhidroglucitol, el ácido 2-hidroxibutanoico y la glucosa-6-fosfato mostraron una regulación positiva, mientras que la oleamida mostró una regulación negativa.
+
+# Discusión general
+Con los datos obtenidos del dataset se pueden realizar diversos análisis y plantear varias conclusiones sobre que metabolitos están mas afectados en FXTAS, esto lo podemos saber gracias al articulo que publican los autores del estudio. Sin embargo, a nivel personal no he sabido analizar correctamente los datos para llegar a determinar resultados significativos. 
+
+# Bibliografía 
+-	Salcedo-Arellano, M. J., Johnson, M. D., McLennan, Y. A., Hwang, Y. H., Juarez, P., McBride, E. L., Pantoja, A. P., Tassone, F., Hagerman, R. J., & Martínez-Cerdeño, V. (2023). Brain metabolomics in fragile X-associated tremor/ataxia syndrome (FXTAS). Cells, 12(17), 2132. https://doi.org/10.3390/cells12172132
+-	Metabolomics Workbench. (2023). Brain metabolomics in fragile X-associated tremor/ataxia syndrome (FXTAS). https://www.metabolomicsworkbench.org/data/DRCCMetadata.php?Mode=Study&StudyID=ST002825&StudyType=MS&ResultType=1
+
+
