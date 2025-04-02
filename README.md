@@ -6,7 +6,7 @@ En este repositorio se encuentran los documentos relacionados con la entrega de 
 
 El fichero descargado es un fichero de texto (.txt) estructurado en bloques. Para el análisis se procesan los datos necesarios de estos bloques, modificando la información del fichero y obteniendo archivos con los datos deseados: 
 -	[ST002825_AN004609](docs/ST002825_AN004609.txt): archivo txt original.
--	[ST002825_DataSet](docs/ST002825_DataSet.txt): archivo txt  con los datos, obtenido eliminando del archivo original las primeras y últimas líneas que no forman marte de los datos. 
+-	[ST002825_DataSet](docs/ST002825_DataSet.txt): archivo txt  con los datos, obtenido eliminando del archivo original las primeras y últimas líneas que no forman parte de los datos. 
 -	[ST002825_InfoMetabolifos](docs/ST002825_InfoMetabolifos.txt): archivo txt con la información correspondiente a los metabolitos, obtenido eliminando del archivo original la información restante.
 -	[ST002825_SampleInfo](docs/ST002825_SampleInfo.txt): archivo txt con la información correspondiente a las muestras, obtenido eliminando del archivo original la información restante.
 -	[DataSetX](docs/DataSetX.xlsx): archivo .xlxs, con la información de ST002825_DataSet.
