@@ -13,5 +13,5 @@ El fichero descargado es un fichero de texto (.txt) estructurado en bloques. Par
 -	[metabolXf](docs/metabolXf.xlsx): archivo .xlxs, con la información de ST002825_ InfoMetabolifos.
 - [SampleXf](docs/SampleXf.xlsx): archivo .xlxs, con la información de ST002825_ SampleInfo.
 -	[SummarizedExperiment_PEC1](docs/SummarizedExperiment_PEC1.Rda): archivo .Rda con el objeto SummarizedExperiment.
--	PEC1: archivo .Rmd con el código R del análisis
--	Ramirez_Garcia_Maria_PEC1: archivo pdf con el informe de la PEC.
+-	[Ramirez_Garcia_Maria_PEC1](docs/Ramirez_Garcia_Maria_PEC1.Rmd): archivo .Rmd con el código R del análisis
+-	[Ramirez_Garcia_Maria_PEC1](docs/Ramirez_Garcia_Maria_PEC1.pdf): archivo pdf con el informe de la PEC.
